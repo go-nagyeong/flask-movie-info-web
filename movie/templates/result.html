@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <link href="{{url_for('static', filename = 'result.css')}}" rel="stylesheet" type="text/css"/>
+  <title>영화정보</title>
+</head>
+<body>
+  <div class="wrap">
+    <div class="movie_search">
+      <div>
+        <a href="#"></a>
+      </div>
+      <div class="search_box">
+        <form method="get" action='/result'>
+          <input type="text" id="text_str" name="title"/>
+          <input type="submit" class="btn_search" value="검색"/>
+        </form>
+      </div>
+    </div>
+
+    <section>
+
+      <article class="information margin_wrap">
+        <div class="movie_image">
+          <img src="{{movieinfo['poster'][0]}}" alt=""/>
+        </div>
+
+        <div class="movie_information">
+          <div class="information_text">
+            <div><span>{{movieinfo['title'][0]}}</span></div>
+            <div><span>개봉일 : {{movieinfo['rel_date'][0]}}</span></div>
+            <div><span>장르 : {{movieinfo['genre'][0]}}</span></div>
+            <div><span>배우 : {{movieinfo['actor'][0]}}</span></div>
+            <div><span>줄거리 : {{movieinfo['summary'][0]}}</span></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="review margin_wrap">
+        <div class="movie_review">
+          <span class="review_text">
+            <h2>리뷰</h2>
+            {% for i in moviereview['review'] %}
+            <p>{{ i }}</p>
+            {% endfor %}
+          </span>
+        </div>
+      </article>
+
+      <article class="ranking margin_wrap">
+        <div class="rank_this">
+          <h2>
+            이 영화의 순위 : 개봉년도({{rel_year}}) 기준 {{movie_count}}개의 영화 중 {{ranking}}위 입니다.
+          </h2>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th colspan="2">연도별 순위</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for i in range(0,10) %}
+            <tr>
+              <td>{{i+1}}</td>
+              <td>
+                <form method="get" action="/result">
+                  <input type="submit" value="{{ranking_by_year[i]}}" class="mit_css" name="title"  style="height: 75px;width: 200px;"/>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        {% for genre in ranking_by_genre %}
+        <table>
+          <thead>
+            <tr>
+              <th colspan="2">{{genre}} 순위</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for i in range(0,10) %}
+            <tr>
+              <td>{{i+1}}</td>
+              <td>
+                <form method="get" action="/result">
+                  <input type="submit" value="{{ranking_by_genre[genre][i]}}" class="mit_css" name="title"  style="height: 75px;width: 200px;"/>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% endfor %}
+      </article>
+
+    </section>
+
+    <footer>
+    </footer>
+  </div>
+</body>
+</html>

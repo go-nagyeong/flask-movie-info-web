@@ -12,7 +12,6 @@
 ## Environment
 anaconda 4.10.3  
 python 3.10.2  
-atom 1.60  
 mysql 8.0.27  
 flask 2.0.2  
 selenium 4.1.0  

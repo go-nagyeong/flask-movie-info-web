@@ -10,7 +10,7 @@ from datetime import datetime
 # kobis 사이트에서 영화 정보 크롤링
 movieinfo = []
 def kobis_crawling():
-    browser = webdriver.Chrome('/Users/ngkim/dev/atom-workspace/movie/chromedriver')
+    browser = webdriver.Chrome('/Users/ngkim/git/flask-movie-info-web/movie/chromedriver')
     browser.implicitly_wait(20)
     browser.get('https://www.kobis.or.kr/kobis/business/stat/boxs/findPeriodBoxOfficeList.do')
 
@@ -72,14 +72,16 @@ def naver_crawling():
         if title.count('#') > 0:
             title = title.replace('#', '%23')
 
+        # 영화 평점
         resp = requests.get('https://search.naver.com/search.naver?sm=tab_hty.top&where=nexearch&query=영화+'+title)
         soup = BeautifulSoup(resp.text, 'html.parser')
-
-        # 영화 평점
         try: grade = float(soup.select_one('dl > div:nth-of-type(3) > dd').text)
         except: grade = 0
+
         # 영화 줄거리
-        try: summary = soup.select_one('span.desc._text').text
+        resp = requests.get('https://search.naver.com/search.naver?sm=tab_hty.top&where=nexearch&query=영화+'+title+'+정보')
+        soup = BeautifulSoup(resp.text, 'html.parser')
+        try: summary = soup.select_one('.intro_box > p').text
         except: summary = ''
 
         movieinfo2.append((grade,summary))

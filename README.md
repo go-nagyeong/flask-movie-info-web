@@ -15,6 +15,8 @@ python 3.10.2
 mysql 8.0.27  
 flask 2.0.2  
 selenium 4.1.0  
+chrome v101  
+*(+ chrome 버전에 맞는 chromedriver 설치 필수)*   
 &nbsp;
 
 ## Screenshot

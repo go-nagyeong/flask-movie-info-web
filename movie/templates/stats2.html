@@ -10,12 +10,12 @@
   <link href="{{ url_for('static', filename='stats.css') }}" rel="stylesheet" type="text/css"/>
 </head>
 <body>
-  <h1>계절별 공포, 스릴러 영화 수요</h1>
+  <div class="wrap">
+    <h1>계절별 공포, 스릴러 영화 수요</h1>
 
-  <p>{{ stats2 }}</p>
-
-  <div>
-    <img src="{{ url_for('graph2') }}">
+    <div class="graph margin_wrap">
+      <img src="{{ url_for('graph2') }}">
+    </div>
   </div>
 </body>
 </html>

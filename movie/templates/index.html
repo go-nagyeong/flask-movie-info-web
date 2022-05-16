@@ -7,59 +7,46 @@
   <meta name="Keywords" content="">
   <meta name="Description" content="">
   <link href="{{ url_for('static', filename='layout.css') }}" rel="stylesheet">
-  <title>검색하기</title>
+  <title>메인</title>
 </head>
 <body>
   <div class="wrap">
-    <div class="movie_search">
+    <div class="movie_header">
+      <div class="btn_home">
+        <a href="/"><span>MOVIE INFO</span></a>
+      </div>
       <div class="search_box">
         <form method="get" action="/result">
-          <input type="text" id="text_str" name="title"/>
+          <input type="text" id="text_str" name="title" placeholder="영화명 입력"/>
           <input type="submit" class="btn_search" value="검색"/>
         </form>
       </div>
     </div>
 
     <section>
-      <article class="movie_analysis">
-        <ul class="clearfix analysis">
+      <article class="movie_analysis margin_wrap">
+        <ul class="clearfix">
           <li>
             <a href="/stats1/">
-              <span class="absolute analysis_box">
-              </span>
-              <span class="absolute analysis_text">
-                <h2>코로나에 의한 영화 매출 동향</h2>
-              </span>
+              <p>코로나에 의한 영화 매출 동향</p>
             </a>
           </li>
 
           <li>
             <a href="/stats2/">
-              <span class="absolute analysis_box">
-              </span>
-              <span class="absolute analysis_text">
-                <h2>계절별 공포,스릴러 영화 수요</h2>
-              </span>
+              <p>계절별 공포,스릴러 영화 수요</p>
             </a>
           </li>
 
           <li>
             <a href="/stats3/">
-              <span class="absolute analysis_box">
-              </span>
-              <span class="absolute analysis_text">
-                <h2>영화 평점과 매출액의 관계</h2>
-              </span>
+              <p>영화 평점과 매출액의 관계</p>
             </a>
           </li>
 
           <li>
             <a href="/stats4/">
-              <span class="absolute analysis_box">
-              </span>
-              <span class="absolute analysis_text">
-                <h2>영화 상영횟수와 매출액의 관계</h2>
-              </span>
+              <p>영화 상영횟수와 매출액의 관계</p>
             </a>
           </li>
         </ul>

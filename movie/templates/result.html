@@ -6,14 +6,15 @@
   <meta name="Author" content="">
   <meta name="Keywords" content="">
   <meta name="Description" content="">
-  <link href="{{url_for('static', filename = 'result.css')}}" rel="stylesheet" type="text/css"/>
-  <title>영화정보</title>
+  <link href="{{ url_for('static', filename='layout.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='result.css') }}" rel="stylesheet">
+  <title>영화 정보</title>
 </head>
 <body>
   <div class="wrap">
-    <div class="movie_search">
-      <div>
-        <a href="#"></a>
+    <div class="movie_header">
+      <div class="btn_home">
+        <a href="/"><span>MOVIE INFO</span></a>
       </div>
       <div class="search_box">
         <form method="get" action='/result'>
@@ -24,40 +25,43 @@
     </div>
 
     <section>
-
-      <article class="information margin_wrap">
+      <article class="information margin_wrap clearfix">
         <div class="movie_image">
           <img src="{{movieinfo['poster'][0]}}" alt=""/>
         </div>
 
         <div class="movie_information">
-          <div class="information_text">
-            <div><span>{{movieinfo['title'][0]}}</span></div>
-            <div><span>개봉일 : {{movieinfo['rel_date'][0]}}</span></div>
-            <div><span>장르 : {{movieinfo['genre'][0]}}</span></div>
-            <div><span>배우 : {{movieinfo['actor'][0]}}</span></div>
-            <div><span>줄거리 : {{movieinfo['summary'][0]}}</span></div>
-          </div>
-        </div>
-      </article>
+          <p>{{movieinfo['title'][0]}}</p>
 
-      <article class="review margin_wrap">
-        <div class="movie_review">
-          <span class="review_text">
-            <h2>리뷰</h2>
-            {% for i in moviereview['review'] %}
-            <p>{{ i }}</p>
-            {% endfor %}
-          </span>
+          <dl>
+            <div class="info_group">
+              <dt>개봉일</dt>
+              <dd>{{movieinfo['rel_date'][0]}}</dd>
+            </div>
+            <div class="info_group">
+              <dt>장르</dt>
+              <dd>{{movieinfo['genre'][0]}}</dd>
+            </div>
+            <div class="info_group">
+              <dt>배우</dt>
+              <dd>{{movieinfo['actor'][0]}}</dd>
+            </div>
+            <div class="info_group">
+              <dt>줄거리</dt>
+              <dd>{{movieinfo['summary'][0]}}</dd>
+            </div>
+            <div class="info_group">
+              <dt>리뷰</dt>
+              {% for i in moviereview['review'] %}
+              <dd>{{ i }}</dd>
+              {% endfor %}
+            </div>
+          </dl>
         </div>
       </article>
 
       <article class="ranking margin_wrap">
-        <div class="rank_this">
-          <h2>
-            이 영화의 순위 : 개봉년도({{rel_year}}) 기준 {{movie_count}}개의 영화 중 {{ranking}}위 입니다.
-          </h2>
-        </div>
+        <p>이 영화의 순위 : 개봉년도({{rel_year}}) 기준 {{movie_count}}개 영화 중 {{ranking}}위 입니다.</p>
 
         <table>
           <thead>
@@ -68,13 +72,9 @@
 
           <tbody>
             {% for i in range(0,10) %}
-            <tr>
+            <tr onclick="location.href='/result?title={{ranking_by_year[i]}}'">
               <td>{{i+1}}</td>
-              <td>
-                <form method="get" action="/result">
-                  <input type="submit" value="{{ranking_by_year[i]}}" class="mit_css" name="title"  style="height: 75px;width: 200px;"/>
-                </form>
-              </td>
+              <td>{{ranking_by_year[i]}}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -90,20 +90,15 @@
 
           <tbody>
             {% for i in range(0,10) %}
-            <tr>
+            <tr onclick="location.href='/result?title={{ranking_by_genre[genre][i]}}'">
               <td>{{i+1}}</td>
-              <td>
-                <form method="get" action="/result">
-                  <input type="submit" value="{{ranking_by_genre[genre][i]}}" class="mit_css" name="title"  style="height: 75px;width: 200px;"/>
-                </form>
-              </td>
+              <td>{{ranking_by_genre[genre][i]}}</td>
             </tr>
             {% endfor %}
           </tbody>
         </table>
         {% endfor %}
       </article>
-
     </section>
 
     <footer>

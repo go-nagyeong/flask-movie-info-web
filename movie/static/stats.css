@@ -1,26 +1,20 @@
 @charset "utf-8";
-@import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap');
 
-body { background:#fff;font-family:"gulim", sans-serif;font-size:18px;color:#5b5b5b;line-height:100%;font-weight:normal;padding:0px;margin:0px;letter-spacing:-0px; }
-html, body { width:100%;height:100%;letter-spacing:0px; }
-div, p, ul, li, table, th, td, textarea, input, span, form, h1, h2, h3, h4, h5, h6, dt, dl, dd, em, sup {padding:0px;margin:0px;}
-ul, ol, dl, dd, dt, li { list-style-type:none;margin:0;padding:0px;line-height:100%;font-size:12px;color:#5b5b5b;letter-spacing:0px; }
-form, fieldset, p {margin:0;padding:0;border:0;}
-img {border:0;vertical-align:middle;outline:none;}
+* {margin: 0; padding: 0; border: 0;}
+body {background: #fff; font-family: 'Noto Sans KR', sans-serif; font-weight: 400, font-size: 16px; color: #000;}
+ul, ol, li {list-style-type: none;}
+a {text-decoration: none;}
 
+.wrap {
+	width: 100%;
+	padding: 20px 0;
+	text-align: center;
+}
+.margin_wrap {margin: 4% 0;}
 
-a,a:link,a:visited,a:active{color:#575757;letter-spacing:normal;text-decoration:none;letter-spacing:-0.8px;}
-a:hover{color:#575757;text-decoration:underline;}
-
-.wrap{width:100%;
-		font-family: 'Black Han Sans', sans-serif;}
-.clearfix::after{content:""; display:block; clear:both;}
-.margin_wrap{width:1280px;
-			margin:0 auto;
-			margin-top:100px;}
-
-h1,p{text-align:center;
-	margin-top:50px;}
-div{display:block;
-	text-align:center;
-	}
+.graph img {
+	width: 100%;
+	max-width: 660px;
+	height: auto;
+}

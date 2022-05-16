@@ -10,12 +10,12 @@
   <link href="{{ url_for('static', filename='stats.css') }}" rel="stylesheet" type="text/css"/>
 </head>
 <body>
-  <h1>영화 상영횟수와 매출의 관계</h1>
-  
-  <p>{{ stats4 }}</p>
+  <div class="wrap">
+    <h1>영화 상영횟수와 매출의 관계</h1>
 
-  <div>
-    <img src="{{ url_for('graph4') }}">
+    <div class="graph margin_wrap">
+      <img src="{{ url_for('graph4') }}">
+    </div>
   </div>
 </body>
 </html>

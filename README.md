@@ -11,10 +11,10 @@
 
 ## Environment
 anaconda 4.10.3  
-python 3.10.2  
+python 3.9.10  
 mysql 8.0.27  
-flask 2.0.2  
-selenium 4.1.0  
+flask 2.1.2  
+selenium 4.1.5  
 chrome v101  
 *(+ chrome 버전에 맞는 chromedriver 설치 필수)*   
 &nbsp;

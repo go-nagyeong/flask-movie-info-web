@@ -1,12 +1,12 @@
-# 🎬 Movie Info Website 🎬
-### 영화 정보 검색 및 랭킹 사이트
+# Movie Info Web
+### 영화 관련 정보 제공 사이트
 (21.06.30 ~ 21.07.05)  
 &nbsp;
 
 ## Description
-- kobis 사이트에서 크롤링을 통해 데이터를 수집하고 DB에서 관리  
+- kobis 사이트에서 크롤링을 통해 영화 데이터를 수집하고 DB에서 관리  
 - 영화 관련 주제로 간단한 데이터 분석 및 시각화 자료 제공  
-- 검색한 영화의 정보 뿐만 아니라 장르별 영화 순위 정보도 제공  
+- 검색한 영화의 정보 뿐만 아니라 개봉년도별, 장르별 영화 순위도 제공  
 &nbsp;
 
 ## Environment
@@ -15,7 +15,6 @@ python 3.9.12
 mysql 8.0.27  
 flask 2.0.3  
 selenium 3.141.0  
-chrome v101  
 *(+ chrome 버전에 맞는 chromedriver 설치 필수)*   
 &nbsp;
 

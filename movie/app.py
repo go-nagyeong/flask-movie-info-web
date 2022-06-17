@@ -1,15 +1,13 @@
-from flask import Flask, render_template, url_for, request, send_file
-from io import BytesIO, StringIO
+from flask import Flask, render_template, redirect, url_for, request, send_file
+from io import BytesIO
 import pymysql
 import pandas as pd
 import matplotlib
-matplotlib.use('agg')
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import datetime as dt
 import platform
-import base64
-import math
-
+import json
 
 app = Flask(__name__)
 
@@ -28,43 +26,88 @@ plt.rcParams['axes.unicode_minus'] = False
 
 @app.route('/')
 def index():
-   return render_template('index.html')
+    conn = pymysql.connect(user='root', passwd='1234', db='moviedb')
+    # 영화명 자동 완성 데이터
+    movie_frame = pd.read_sql("SELECT id, title, poster FROM movie_tb", con = conn)
+    movie_list = movie_frame['title'].values.tolist()
+    movie_id = dict(zip(movie_frame.title, movie_frame.id))
+    movie_poster = dict(zip(movie_frame.title, movie_frame.poster))
+    return render_template('index.html', movie_list = json.dumps(movie_list), movie_id = movie_id, movie_poster = movie_poster)
 
 
 @app.route('/result', methods=['GET'])
 def result():
     try:
         conn = pymysql.connect(user='root', passwd='1234', db='moviedb')
+    except:
+        return redirect(url_for('_except', err = 'DB 연결 실패'))
+    else:
+        try:
+            # 영화명 자동 완성 데이터
+            movie_frame = pd.read_sql("SELECT id, title, poster FROM movie_tb", con = conn)
+            movie_list = movie_frame['title'].values.tolist()
+            movie_id = dict(zip(movie_frame.title, movie_frame.id))
+            movie_poster = dict(zip(movie_frame.title, movie_frame.poster))
 
-        # 검색한 영화의 정보
-        keyword = request.args.get('title')
-        movieinfo = pd.read_sql("select * from movieinfo where title='" + keyword + "'", con = conn)
-        moviereview = pd.read_sql("select review from moviereview where title ='" + keyword + "'", con = conn)
+            # 검색한 영화의 정보
+            id = request.args.get('selected_movie')
 
-        # 검색한 영화의 개봉년도 기준 순위
-        rel_year = movieinfo.loc[0, 'rel_date'].year
-        df = pd.read_sql("select rel_date, title, audience from movie order by audience desc", con = conn)
-        df = df[pd.to_datetime(df['rel_date']).dt.year == rel_year].reset_index(drop=True)
-        movie_count = len(df)
-        ranking = df[df['title'] == keyword].index[0] + 1
-        ranking_by_year = df[0:10]['title']
+            movie_info = pd.read_sql("SELECT * FROM movie_tb WHERE id = {}".format(id), con = conn)
+            movie_info = movie_info.to_dict('records')[0]
 
-        # 장르별 영화 순위
-        ranking_by_genre = {}
-        df = pd.read_sql("select genre, count(*) from moviegenre group by genre order by count(*) desc", con = conn)
-        df = df[df['genre'] != '']
-        df = df[df['count(*)'] >= 10]
+            for i in ['country', 'genre', 'director', 'actor']:
+                movie_info2 = pd.read_sql("SELECT a.{0} FROM {0}_tb a JOIN movie_{0}_tb b ON a.id = b.{0}_id WHERE b.movie_id = {1}".format(i, id), con = conn)
+                movie_info[i] = ', '.join(movie_info2[i].values.tolist())
 
-        for genre in df['genre']:
-            dff = pd.read_sql("select * from movieinfo where genre like '%"+genre+"%' order by audience desc", con = conn)
-            ranking_by_genre[genre] = dff[0:10]['title']
+            movie_review = pd.read_sql("SELECT review FROM movie_review_tb WHERE movie_id = {}".format(id), con = conn)
+            movie_info['reviews'] = movie_review['review'].values.tolist()
 
-        return render_template('result.html', movieinfo = movieinfo, moviereview = moviereview, rel_year = rel_year, movie_count = movie_count, ranking = ranking, ranking_by_year = ranking_by_year, ranking_by_genre = ranking_by_genre)
-    except Exception as e:
-        print('예외가 발생했습니다.', e)
-        return render_template('except.html')
-    finally:
-        conn.close()
+            # 검색한 영화의 개봉년도 기준 순위
+            # (rel_year 기준, 영화 movie_count개 중 ranking위 입니다.)
+            rel_year = movie_info['rel_date'].year
+            ranking_by_rel_year = pd.read_sql("SELECT id, title, RANK() OVER (ORDER BY audience DESC) ranking FROM movie_tb WHERE year(rel_date) = {}".format(rel_year), con = conn)
+            movie_count = len(ranking_by_rel_year)
+            ranking = int(ranking_by_rel_year[ranking_by_rel_year['id'] == int(id)]['ranking'])
+            
+            # 개봉년도 기준 영화 1~10위 순위표를 위한 데이터
+            if ranking <= 10:
+                ranking_by_rel_year = ranking_by_rel_year[:10]
+            else:
+                search_movie = ranking_by_rel_year[ranking_by_rel_year['id'] == int(id)]
+                ranking_by_rel_year = ranking_by_rel_year[:10]
+                ranking_by_rel_year = ranking_by_rel_year.append(search_movie)
+
+            # 장르별 전체 영화 순위
+            # 순위를 매길 만큼 영화 개수가 많지 않은 장르는 제외
+            genres = pd.read_sql("SELECT genre_id, count(*) count FROM movie_genre_tb GROUP BY genre_id HAVING count > 20 ORDER BY count DESC", con = conn)
+
+            ranking_by_genre = {}
+            for i in genres['genre_id']:
+                rank = pd.read_sql("SELECT id, title, RANK() OVER (ORDER BY audience DESC) ranking FROM movie_tb m JOIN movie_genre_tb g ON g.movie_id = m.id WHERE g.genre_id = {}".format(i), con = conn)
+                genre = pd.read_sql("SELECT genre FROM genre_tb WHERE id = {}".format(i), con = conn)
+                genre = genre['genre'].to_string(index=False)
+                ranking_by_genre[genre] = rank[0:10]
+
+            return render_template('result.html', 
+                movie_list = json.dumps(movie_list),
+                movie_id = movie_id,
+                movie_poster = movie_poster,
+                movie_info = movie_info,
+                rel_year = rel_year,
+                movie_count = movie_count,
+                ranking = ranking,
+                ranking_by_rel_year = ranking_by_rel_year,
+                ranking_by_genre = ranking_by_genre
+            )
+        except Exception as e:
+            return redirect(url_for('_except', err = e))
+        finally:
+            conn.close()
+
+@app.route('/except/')
+def _except():
+    err = request.args.get('err')
+    return render_template('except.html', err = err)
 
 
 # 코로나에 의한 영화 매출 동향
@@ -73,9 +116,13 @@ def graph1():
     try:
         conn = pymysql.connect(user='root', passwd='1234', db='moviedb')
 
-        df = pd.read_sql("select rel_date, sales from movieinfo", con = conn)
+        sql = """
+        SELECT rel_date, sales
+        FROM movie_tb
+        """
+        df = pd.read_sql(sql, con = conn)
         df['rel_date'] = pd.to_datetime(df['rel_date']).dt.year
-        stats = df.groupby('rel_date').mean()[9:22]
+        stats = df.groupby('rel_date').mean()
 
         # 시각화
         fig = plt.figure()
@@ -107,10 +154,16 @@ def graph2():
     try:
         conn = pymysql.connect(user='root', passwd='1234', db='moviedb')
 
-        df = pd.read_sql("select rel_date, audience from movieinfo where genre regexp '공포|스릴러'", con = conn)
+        sql = """
+        SELECT m.rel_date, m.audience
+        FROM movie_tb m JOIN movie_genre_tb g
+        ON m.id = g.movie_id
+        WHERE g.genre_id IN (8,16)
+        """
+        df = pd.read_sql(sql, con = conn)
         df['rel_date'] = pd.to_datetime(df['rel_date']).dt.quarter
         stats = df.groupby('rel_date').mean()
-
+        
         # 시각화
         fig = plt.figure()
         ax = fig.add_subplot()
@@ -140,14 +193,18 @@ def graph3():
     try:
         conn = pymysql.connect(user='root', passwd='1234', db='moviedb')
 
-        df = pd.read_sql("select sales, grade from movieinfo", con = conn)
-        df = df[df['grade'] != 0]
+        sql = """
+        SELECT grade, sales
+        FROM movie_tb
+        """
+        df = pd.read_sql(sql, con = conn)
+        df = df[~df['grade'].isna()]
         df['grade'] = ((df['grade']*100)//100).astype('int')
 
+        # 3점 미만과 10점은 영화 빈도가 매우 낮아 평균 매출 값이 통계적으로 무의미하다고 판단이 되어 산정하지 않음
         df.groupby('grade', as_index=False).count()
-        # 5점 미만의 영화 빈도가 매우 낮아 평균 매출 값이 통계적으로 무의미하다고 판단이 되어
-        # 5점 미만은 산정하지 않음
-        df = df[df['grade'] >= 5]
+        df = df[(df['grade'] >= 3) & (df['grade'] <= 9)]
+
         stats = df.groupby('grade').mean()
 
         # 시각화
@@ -179,14 +236,19 @@ def graph4():
     try:
         conn = pymysql.connect(user='root', passwd='1234', db='moviedb')
 
-        df = pd.read_sql("select play, sales from movieinfo", con = conn)
-        df['play'].describe()
-        df['play'] = (df['play']//10000)*10000
+        sql = """
+        SELECT play, sales
+        FROM movie_tb
+        """
+        df = pd.read_sql(sql, con = conn)
 
+        # 기초통계량 확인해서 범위 묶기
+        df['play'].describe()
+        df['play'] = (df['play']//5000)*5000
+
+        # 빈도가 매우 낮아 평균 매출 값이 통계적으로 무의미하다고 판단이 되는 범위는 제거
         df.groupby('play', as_index=False).count()
-        # 12만회 이상의 상영 횟수를 가지는 영화 빈도가 매우 낮아 평균 매출 값이
-        # 통계적으로 무의미하다고 판단이 되어 12만회 이상은 산정하지 않음
-        df = df[df['play'] < 120000]
+        df = df[df['play'] < 50000]
         stats = df.groupby('play').mean()
 
         # 시각화
@@ -213,4 +275,4 @@ def stats4():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(port=5001, debug=True)

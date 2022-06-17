@@ -7,6 +7,11 @@
   <meta name="Keywords" content="">
   <meta name="Description" content="">
   <link href="{{ url_for('static', filename='layout.css') }}" rel="stylesheet">
+
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
   <title>메인</title>
 </head>
 <body>
@@ -15,12 +20,62 @@
       <div class="btn_home">
         <a href="/"><span>MOVIE INFO</span></a>
       </div>
-      <div class="search_box">
-        <form method="get" action="/result">
-          <input type="text" id="text_str" name="title" placeholder="영화명 입력"/>
-          <input type="submit" class="btn_search" value="검색"/>
-        </form>
-      </div>
+
+      <!-- 영화명 검색 자동 완성 -->
+      <script type="text/javascript">
+        $(function() {
+          var movieList = '{{ movie_list | safe }}';
+          var movieList = JSON.parse(movieList);
+          var movieId = JSON.parse('{{ movie_id | tojson }}');
+          var moviePoster = JSON.parse('{{ movie_poster | tojson }}');
+
+          // 영화명 검색어 자동 완성 기능
+          $("#text_search").autocomplete({
+            source: movieList,
+            select: function(event, ui) {
+              $("input[name=selected_movie]").val(movieId[ui.item.value]).trigger('change')
+              $("#img_search").attr('src', moviePoster[ui.item.value])
+              $("#img_search").show()
+              $("#text_search").blur()
+            },
+            focus: function(event, ui) {
+              return false;
+            },
+          });
+          
+          // 검색 키워드 변경 시 선택된 영화 초기화
+          $("#text_search").keyup(function() {
+            if ($("input[name=selected_movie]").val()) {
+              $("input[name=selected_movie]").val('').trigger('change')
+              $("#img_search").hide()
+            }
+          });
+
+          // 자동완성 select에서 영화를 선택해야만 버튼 활성화
+          $("input[name=selected_movie]").change(function() {
+            if ($("input[name=selected_movie]").val()) {
+              $("#btn_search").attr('disabled', false)
+            } else {
+              $("#btn_search").attr('disabled', true)
+            }
+          });
+
+          // form 내의 keyword input은 submit하지 않기
+          $('#form_search').submit(function() {
+            $(this).children('#text_search').attr('disabled', true)
+            return true
+          });
+        });
+      </script>
+
+      <form method="get" action='/result' id="form_search">
+        <div class="search_box">
+          <input type="image" id="img_search" alt="poster" onclick="return false" />
+          <input type="text" id='text_search' placeholder="영화명 입력" />
+          <input type="hidden" name="selected_movie" value="" />
+          <input type="submit" id="btn_search" value="검색" disabled="true" />
+        </div>
+      </form>
     </div>
 
     <section>

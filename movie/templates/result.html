@@ -8,6 +8,11 @@
   <meta name="Description" content="">
   <link href="{{ url_for('static', filename='layout.css') }}" rel="stylesheet">
   <link href="{{ url_for('static', filename='result.css') }}" rel="stylesheet">
+
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
   <title>영화 정보</title>
 </head>
 <body>
@@ -16,44 +21,110 @@
       <div class="btn_home">
         <a href="/"><span>MOVIE INFO</span></a>
       </div>
-      <div class="search_box">
-        <form method="get" action='/result'>
-          <input type="text" id="text_str" name="title"/>
-          <input type="submit" class="btn_search" value="검색"/>
-        </form>
-      </div>
+
+      <!-- 영화명 검색 자동 완성 -->
+      <script type="text/javascript">
+        $(function() {
+          var movieList = '{{ movie_list | safe }}';
+          var movieList = JSON.parse(movieList);
+          var movieId = JSON.parse('{{ movie_id | tojson }}');
+          var moviePoster = JSON.parse('{{ movie_poster | tojson }}');
+
+          // 영화명 검색어 자동 완성 기능
+          $("#text_search").autocomplete({
+            source: movieList,
+            select: function(event, ui) {
+              $("input[name=selected_movie]").val(movieId[ui.item.value]).trigger('change')
+              $("#img_search").attr('src', moviePoster[ui.item.value])
+              $("#img_search").show()
+              $("#text_search").blur()
+            },
+            focus: function(event, ui) {
+              return false;
+            },
+          });
+          
+          // 검색 키워드 변경 시 선택된 영화 초기화
+          $("#text_search").keyup(function() {
+            if ($("input[name=selected_movie]").val()) {
+              $("input[name=selected_movie]").val('').trigger('change')
+              $("#img_search").hide()
+            }
+          });
+
+          // 자동완성 select에서 영화를 선택해야만 버튼 활성화
+          $("input[name=selected_movie]").change(function() {
+            if ($("input[name=selected_movie]").val()) {
+              $("#btn_search").attr('disabled', false)
+            } else {
+              $("#btn_search").attr('disabled', true)
+            }
+          });
+
+          // form 내의 keyword input은 submit하지 않기
+          $('#form_search').submit(function() {
+            $(this).children('#text_search').attr('disabled', true)
+            return true
+          });
+        });
+      </script>
+
+      <form method="get" action='/result' id="form_search">
+        <div class="search_box">
+          <input type="image" id="img_search" alt="poster" onclick="return false" />
+          <input type="text" id='text_search' placeholder="영화명 입력" />
+          <input type="hidden" name="selected_movie" value="" />
+          <input type="submit" id="btn_search" value="검색" disabled="true" />
+        </div>
+      </form>
     </div>
 
     <section>
       <article class="information margin_wrap clearfix">
         <div class="movie_image">
-          <img src="{{movieinfo['poster'][0]}}" alt=""/>
+          <img src="{{ movie_info['poster'] }}" alt="poster"/>
         </div>
 
         <div class="movie_information">
-          <p>{{movieinfo['title'][0]}}</p>
+          <p>{{ movie_info['title'] }}</p>
 
           <dl>
             <div class="info_group">
+              <dt>제작년도</dt>
+              <dd>{{ movie_info['production_year'] }}</dd>
+            </div>
+            <div class="info_group">
               <dt>개봉일</dt>
-              <dd>{{movieinfo['rel_date'][0]}}</dd>
+              <dd>{{ movie_info['rel_date'] }}</dd>
+            </div>
+            <div class="info_group">
+              <dt>제작국가</dt>
+              <dd>{{ movie_info['country'] }}</dd>
             </div>
             <div class="info_group">
               <dt>장르</dt>
-              <dd>{{movieinfo['genre'][0]}}</dd>
+              <dd>{{ movie_info['genre'] }}</dd>
+            </div>
+            <div class="info_group">
+              <dt>감독</dt>
+              <dd>{{ movie_info['director'] }}</dd>
             </div>
             <div class="info_group">
               <dt>배우</dt>
-              <dd>{{movieinfo['actor'][0]}}</dd>
+              <dd>{{ movie_info['actor'] }}</dd>
+            </div>
+            <div class="info_group">
+              <dt>평점</dt>
+              <dd>{{ movie_info['grade'] }}</dd>
             </div>
             <div class="info_group">
               <dt>줄거리</dt>
-              <dd>{{movieinfo['summary'][0]}}</dd>
+              <dd>{{ movie_info['summary'] }}</dd>
             </div>
             <div class="info_group">
               <dt>리뷰</dt>
-              {% for i in moviereview['review'] %}
-              <dd>{{ i }}</dd>
+              {% for review in movie_info['reviews'] %}
+              <dd>{{ review }}</dd>
               {% endfor %}
             </div>
           </dl>
@@ -61,7 +132,7 @@
       </article>
 
       <article class="ranking margin_wrap">
-        <p>이 영화의 순위 : 개봉년도({{rel_year}}) 기준 {{movie_count}}개 영화 중 {{ranking}}위 입니다.</p>
+        <p>이 영화의 순위 : 개봉년도({{ rel_year }}) 기준 {{ movie_count }}개 영화 중 {{ ranking }}위 입니다.</p>
 
         <table>
           <thead>
@@ -71,28 +142,39 @@
           </thead>
 
           <tbody>
-            {% for i in range(0,10) %}
-            <tr onclick="location.href='/result?title={{ranking_by_year[i]}}'">
-              <td>{{i+1}}</td>
-              <td>{{ranking_by_year[i]}}</td>
-            </tr>
+            {% for index, row in ranking_by_rel_year.iterrows() %}
+              {% if index <= 9 %}
+              <tr onclick="location.href='/result?selected_movie={{ row['id'] }}'">
+                <td>{{ row['ranking'] }}</td>
+                <td>{{ row['title'] }}</td>
+              </tr>
+              {% else %}
+              <tr>
+                <td></td>
+                <td>. . .</td>
+              </tr>
+              <tr onclick="location.href='/result?selected_movie={{ row['id'] }}'">
+                <td>{{ row['ranking'] }}</td>
+                <td>{{ row['title'] }}</td>
+              </tr>
+              {% endif %}
             {% endfor %}
           </tbody>
         </table>
 
-        {% for genre in ranking_by_genre %}
+        {% for genre, movies in ranking_by_genre.items() %}
         <table>
           <thead>
             <tr>
-              <th colspan="2">{{genre}} 순위</th>
+              <th colspan="2">{{ genre }} 순위</th>
             </tr>
           </thead>
 
           <tbody>
-            {% for i in range(0,10) %}
-            <tr onclick="location.href='/result?title={{ranking_by_genre[genre][i]}}'">
-              <td>{{i+1}}</td>
-              <td>{{ranking_by_genre[genre][i]}}</td>
+            {% for index, row in movies.iterrows() %}
+            <tr onclick="location.href='/result?selected_movie={{ row['id'] }}'">
+              <td>{{ row['ranking'] }}</td>
+              <td>{{ row['title'] }}</td>
             </tr>
             {% endfor %}
           </tbody>

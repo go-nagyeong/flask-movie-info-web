@@ -16,7 +16,7 @@
 </head>
 <body>
   <div class="wrap">
-    <div class="movie_header">
+    <section class="header">
       <div class="btn_home">
         <a href="/"><span>MOVIE INFO</span></a>
       </div>
@@ -68,51 +68,39 @@
         });
       </script>
 
-      <form method="get" action='/result' id="form_search">
-        <div class="search_box">
+      <div class="search_box">
+        <form method="get" action='/result' id="form_search">
           <input type="image" id="img_search" alt="poster" onclick="return false" />
           <input type="text" id='text_search' placeholder="영화명 입력" />
           <input type="hidden" name="selected_movie" value="" />
           <input type="submit" id="btn_search" value="검색" disabled="true" />
-        </div>
-      </form>
-    </div>
-
-    <section>
-      <article class="movie_analysis margin_wrap">
-        <ul class="clearfix">
-          <li>
-            <a href="/stats1/">
-              <p>코로나에 의한 영화 매출 동향</p>
-            </a>
-          </li>
-
-          <li>
-            <a href="/stats2/">
-              <p>계절별 공포,스릴러 영화 수요</p>
-            </a>
-          </li>
-
-          <li>
-            <a href="/stats3/">
-              <p>영화 평점과 매출액의 관계</p>
-            </a>
-          </li>
-
-          <li>
-            <a href="/stats4/">
-              <p>영화 상영횟수와 매출액의 관계</p>
-            </a>
-          </li>
-        </ul>
-      </article>
+          <p class="arrow_box">영화를 선택해주세요.</p>
+        </form>
+      </div>
     </section>
 
-    <div class="movie_ad">
-      <div class="ad_1">
-        <img src="{{ url_for('static', filename='img/lotte.png') }}" alt=""/>
+    <section class="body">
+      <article class="movie_analysis margin_wrap">
+        <ul class="clearfix">
+          <div>
+            <li><a href="/stats1/"><p>코로나에 의한 영화 매출 동향</p></a></li>
+            <li><a href="/stats2/"><p>계절별 공포,스릴러 영화 수요</p></a></li>
+          </div>
+
+          <div>
+            <li><a href="/stats3/"><p>영화 평점과 매출액의 관계</p></a></li>
+            <li><a href="/stats4/"><p>영화 상영횟수와 매출액의 관계</p></a></li>
+          </div>
+        </ul>
+      </article>
+      
+      <div class="movie_ad margin_wrap">
+        <div class="ad_1">
+          <img src="{{ url_for('static', filename='img/lotte.png') }}" alt=""/>
+        </div>
       </div>
-    </div>
+    </section>
+
 
     <footer>
     </footer>

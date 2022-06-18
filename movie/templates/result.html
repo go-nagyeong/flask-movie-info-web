@@ -12,12 +12,11 @@
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
   <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-
   <title>영화 정보</title>
 </head>
 <body>
   <div class="wrap">
-    <div class="movie_header">
+    <section class="header">
       <div class="btn_home">
         <a href="/"><span>MOVIE INFO</span></a>
       </div>
@@ -37,6 +36,7 @@
               $("input[name=selected_movie]").val(movieId[ui.item.value]).trigger('change')
               $("#img_search").attr('src', moviePoster[ui.item.value])
               $("#img_search").show()
+              // $("#img_search").css('display', 'inline-block')
               $("#text_search").blur()
             },
             focus: function(event, ui) {
@@ -69,20 +69,21 @@
         });
       </script>
 
-      <form method="get" action='/result' id="form_search">
-        <div class="search_box">
+      <div class="search_box">
+        <form method="get" action='/result' id="form_search">
           <input type="image" id="img_search" alt="poster" onclick="return false" />
           <input type="text" id='text_search' placeholder="영화명 입력" />
           <input type="hidden" name="selected_movie" value="" />
           <input type="submit" id="btn_search" value="검색" disabled="true" />
-        </div>
-      </form>
-    </div>
+          <p class="arrow_box">영화를 선택해주세요.</p>
+        </form>
+      </div>
+    </section>
 
-    <section>
-      <article class="information margin_wrap clearfix">
+    <section class="body">
+      <article class="first_row margin_wrap">
         <div class="movie_image">
-          <img src="{{ movie_info['poster'] }}" alt="poster"/>
+          <img src="{{ movie_info['poster'] }}" alt="poster" />
         </div>
 
         <div class="movie_information">
@@ -114,72 +115,88 @@
               <dd>{{ movie_info['actor'] }}</dd>
             </div>
             <div class="info_group">
-              <dt>평점</dt>
-              <dd>{{ movie_info['grade'] }}</dd>
-            </div>
-            <div class="info_group">
               <dt>줄거리</dt>
               <dd>{{ movie_info['summary'] }}</dd>
-            </div>
-            <div class="info_group">
-              <dt>리뷰</dt>
-              {% for review in movie_info['reviews'] %}
-              <dd>{{ review }}</dd>
-              {% endfor %}
             </div>
           </dl>
         </div>
       </article>
 
-      <article class="ranking margin_wrap">
-        <p>이 영화의 순위 : 개봉년도({{ rel_year }}) 기준 {{ movie_count }}개 영화 중 {{ ranking }}위 입니다.</p>
+      <article class="second_row margin_wrap">
+        <div class="movie_information">
+          <p>이 영화의 순위 : {{ rel_year }}년도(개봉년도) 기준 {{ movie_count }}개 영화 중 {{ ranking }}위 입니다.</p>
+
+          <dl>
+            <div class="info_group">
+              <dt>평점</dt>
+              <dd>{{ movie_info['grade'] }}</dd>
+            </div>
+            <div class="info_group">
+              <dt>리뷰</dt>
+              {% for review in movie_info['reviews'] %}
+              <dd>{{ review }}</dd>
+              <br/>
+              {% endfor %}
+            </div>
+          </dl>
+        </div>
 
         <table>
           <thead>
             <tr>
-              <th colspan="2">연도별 순위</th>
+              <th colspan="2">{{ rel_year }}년 영화 순위</th>
             </tr>
           </thead>
 
           <tbody>
             {% for index, row in ranking_by_rel_year.iterrows() %}
               {% if index <= 9 %}
-              <tr onclick="location.href='/result?selected_movie={{ row['id'] }}'">
-                <td>{{ row['ranking'] }}</td>
-                <td>{{ row['title'] }}</td>
-              </tr>
+                {% if row['title'] == movie_info['title'] %}
+                <tr class="highlight" onclick="location.href='/result?selected_movie={{ row['id'] }}'">
+                {% else %}
+                <tr onclick="location.href='/result?selected_movie={{ row['id'] }}'">
+                {% endif %}
+                  <td>{{ row['ranking'] }}</td>
+                  <td>{{ row['title'] }}</td>
+                </tr>
               {% else %}
-              <tr>
-                <td></td>
-                <td>. . .</td>
-              </tr>
-              <tr onclick="location.href='/result?selected_movie={{ row['id'] }}'">
-                <td>{{ row['ranking'] }}</td>
-                <td>{{ row['title'] }}</td>
-              </tr>
+                <tr>
+                  <td></td>
+                  <td>. . .</td>
+                </tr>
+                <tr class="highlight" onclick="location.href='/result?selected_movie={{ row['id'] }}'">
+                  <td>{{ row['ranking'] }}</td>
+                  <td>{{ row['title'] }}</td>
+                </tr>
               {% endif %}
             {% endfor %}
           </tbody>
         </table>
+      </article>
 
-        {% for genre, movies in ranking_by_genre.items() %}
-        <table>
-          <thead>
-            <tr>
-              <th colspan="2">{{ genre }} 순위</th>
-            </tr>
-          </thead>
+      <article class="third_row margin_wrap">
+        <p>각 장르별 영화 순위</p>
 
-          <tbody>
-            {% for index, row in movies.iterrows() %}
-            <tr onclick="location.href='/result?selected_movie={{ row['id'] }}'">
-              <td>{{ row['ranking'] }}</td>
-              <td>{{ row['title'] }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-        {% endfor %}
+        <div>
+          {% for genre, movies in ranking_by_genre.items() %}
+          <table>
+            <thead>
+              <tr>
+                <th colspan="2">{{ genre }} 순위</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for index, row in movies.iterrows() %}
+              <tr onclick="location.href='/result?selected_movie={{ row['id'] }}'">
+                <td>{{ row['ranking'] }}</td>
+                <td>{{ row['title'] }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% endfor %}
+        </div>
       </article>
     </section>
 

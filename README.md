@@ -7,7 +7,7 @@
 - kobis 사이트에서 크롤링을 통해 영화 데이터를 수집하고 DB에서 관리  
 - 영화 관련 주제로 간단한 데이터 분석 및 시각화 자료 제공  
 - 검색한 영화의 정보 뿐만 아니라 개봉년도별, 장르별 영화 순위도 제공  
-&nbsp;
+&nbsp;  
 
 ## Environment
 anaconda 4.12.0  
@@ -16,6 +16,10 @@ mysql 8.0.27
 flask 2.0.3  
 selenium 3.141.0  
 *(+ chrome 버전에 맞는 chromedriver 설치 필수)*   
+&nbsp;
+
+## ERD (DB Structure)
+![Untitled](https://user-images.githubusercontent.com/84227532/174426081-ebb68e9d-8262-4d78-980b-e0da4e7f20b1.png)  
 &nbsp;
 
 ## Screenshot
